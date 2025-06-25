@@ -104,70 +104,8 @@ export function useNotifications() {
           return <Bell className="w-5 h-5 text-gray-500" />
       }
     }
-
-    toast.custom((t) => (
-      <motion.div
-        initial={{ opacity: 0, y: -50, scale: 0.95 }}
-        animate={{ 
-          opacity: t.visible ? 1 : 0,
-          y: t.visible ? 0 : -50,
-          scale: t.visible ? 1 : 0.95
-        }}
-        className="max-w-md w-full bg-white shadow-lg rounded-xl pointer-events-auto flex ring-1 ring-black ring-opacity-5 overflow-hidden"
-      >
-        <div className="flex-1 w-0 p-4">
-          <div className="flex items-start">
-            <div className="flex-shrink-0">
-              {notification.data.actionUserAvatar ? (
-                <img
-                  className="h-10 w-10 rounded-full object-cover"
-                  src={notification.data.actionUserAvatar}
-                  alt=""
-                />
-              ) : (
-                <div className="h-10 w-10 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center">
-                  <span className="text-white font-medium text-sm">
-                    {notification.data.actionUserName?.[0] || '?'}
-                  </span>
-                </div>
-              )}
-            </div>
-            <div className="ml-3 flex-1">
-              <div className="flex items-center gap-2 mb-1">
-                {getIcon()}
-                <p className="text-sm font-medium text-gray-900">
-                  {notification.title}
-                </p>
-              </div>
-              <p className="text-sm text-gray-500">
-                {notification.message}
-              </p>
-              {notification.data.photoUrl && (
-                <div className="mt-2">
-                  <img
-                    src={notification.data.photoUrl}
-                    alt="Photo"
-                    className="w-12 h-12 rounded-lg object-cover"
-                  />
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-        <div className="flex border-l border-gray-200">
-          <button
-            onClick={() => toast.dismiss(t.id)}
-            className="w-full border border-transparent rounded-none rounded-r-xl p-4 flex items-center justify-center text-sm font-medium text-indigo-600 hover:text-indigo-500 focus:outline-none"
-          >
-            ✕
-          </button>
-        </div>
-      </motion.div>
-    ), {
-      duration: 5000,
-      position: 'top-right',
-    })
   }
+
 
   // SSE connection management for real-time notifications
   useEffect(() => {
