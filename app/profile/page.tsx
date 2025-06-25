@@ -646,7 +646,7 @@ export default function ProfilePage() {
                   title="No photos yet"
                   description="Share your first photo to get started!"
                   actionLabel="Upload Photo"
-                  actionHref="/upload"
+                  actionHref="/addphoto"
                 />
               ))}
 

@@ -815,7 +815,7 @@ export default function Page() {
                       : "When they share photos, you'll see them here."
                   }
                   actionLabel={isOwnProfile ? "Upload Photo" : undefined}
-                  actionHref={isOwnProfile ? "/upload" : undefined}
+                  actionHref={isOwnProfile ? "/addphoto" : undefined}
                 />
               ))}
 
