@@ -1,0 +1,26 @@
+{
+  "functions": {
+    "app/api/notifications/stream/route.ts": {
+      "maxDuration": 59
+    }
+  },
+  "headers": [
+    {
+      "source": "/api/notifications/stream",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-transform"
+        },
+        {
+          "key": "Connection",
+          "value": "keep-alive"
+        },
+        {
+          "key": "Content-Type",
+          "value": "text/event-stream"
+        }
+      ]
+    }
+  ]
+}

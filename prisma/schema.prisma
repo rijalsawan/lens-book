@@ -1,0 +1,176 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Authentication fields
+  name      String?
+  username  String   @unique
+  email     String   @unique
+  password  String @default("")
+  location  String?
+  
+  // Profile fields
+  bio       String?
+  avatar    String?
+  isPrivate Boolean  @default(false)
+  
+  // Relations
+  photos    Photo[]
+  likes     Like[]
+  comments  Comment[]
+  followers Follow[] @relation("UserFollowers")
+  following Follow[] @relation("UserFollowing")
+  shares    Share[]
+  notifications Notification[]
+  notificationsReceived Notification[] @relation("NotificationActions")
+}
+
+model Photo {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Photo data
+  url         String
+  title       String?
+  description String?
+  tags        String[] // Array of tags for better discovery
+  location    String?
+  
+  // Metadata
+  width       Int?
+  height      Int?
+  fileSize    Int?
+  
+  // Relations
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  likes       Like[]
+  comments    Comment[]
+  shares      Share[]
+  notifications Notification[]
+  
+  // Counts for performance (denormalized)
+  likeCount    Int @default(0)
+  commentCount Int @default(0)
+  shareCount   Int @default(0)
+  
+  @@index([createdAt])
+  @@index([userId])
+}
+
+model Like {
+  id      String @id @default(cuid())
+  createdAt DateTime @default(now())
+  
+  userId  String
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  photoId String
+  photo   Photo  @relation(fields: [photoId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, photoId]) // Prevent duplicate likes
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  content   String
+  
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  photoId   String
+  photo     Photo    @relation(fields: [photoId], references: [id], onDelete: Cascade)
+  
+  // For nested comments/replies
+  parentId  String?
+  parent    Comment? @relation("CommentReplies", fields: [parentId], references: [id])
+  replies   Comment[] @relation("CommentReplies")
+  notifications Notification[]
+  
+  @@index([photoId])
+  @@index([createdAt])
+}
+
+model Follow {
+  id          String @id @default(cuid())
+  createdAt   DateTime @default(now())
+  
+  followerId  String
+  follower    User   @relation("UserFollowing", fields: [followerId], references: [id], onDelete: Cascade)
+  
+  followingId String
+  following   User   @relation("UserFollowers", fields: [followingId], references: [id], onDelete: Cascade)
+  
+  @@unique([followerId, followingId]) // Prevent duplicate follows
+}
+
+model Share {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  photoId   String
+  photo     Photo    @relation(fields: [photoId], references: [id], onDelete: Cascade)
+  
+  // Share types: "profile" for sharing to own profile, "external" for sharing outside app
+  shareType String   @default("profile")
+  platform  String?  // "instagram", "twitter", etc. for external shares
+  
+  @@index([userId])
+  @@index([photoId])
+}
+
+// Add this to your existing schema.prisma file after the Share model
+model Notification {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Notification data
+  type      String   // 'like', 'comment', 'follow', 'reply'
+  title     String
+  message   String
+  isRead    Boolean  @default(false)
+  
+  // Relations
+  userId    String   // User receiving the notification
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Action user (who performed the action)
+  actionUserId String
+  actionUser   User   @relation("NotificationActions", fields: [actionUserId], references: [id], onDelete: Cascade)
+  
+  // Optional references to related entities
+  photoId   String?
+  photo     Photo?   @relation(fields: [photoId], references: [id], onDelete: Cascade)
+  
+  commentId String?
+  comment   Comment? @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([createdAt])
+  @@index([isRead])
+}
