@@ -42,7 +42,7 @@ const Navbar = () => {
                 initial={{ y: 100, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ duration: 0.6, delay: 0.2 }}
-                className="max-sm:fixed lg:hidden max-sm:bottom-0 max-sm:left-0 max-sm:right-0 max-sm:z-50 max-sm:bg-white max-sm:border-t max-sm:border-gray-100"
+                className="max-sm:fixed lg:hidden max-md:hidden md:hidden max-sm:block max-sm:bottom-0 max-sm:left-0 max-sm:right-0 max-sm:z-50 max-sm:bg-white max-sm:border-t max-sm:border-gray-100"
             >
                 <div className="max-sm:px-4 max-sm:py-2">
                     <div className="max-sm:flex max-sm:justify-around max-sm:items-center">
