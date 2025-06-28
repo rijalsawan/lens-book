@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { Home, Search, PlusSquare, Heart, User, Camera } from 'lucide-react'
+import { Home, Search, PlusSquare, Heart, User, Camera, MessageCircle } from 'lucide-react'
 import {
     SignInButton,
     ClerkProvider,
@@ -12,9 +12,11 @@ import {
 } from '@clerk/nextjs'
 
 import NotificationDropdown from '@/components/Notification'
+import { useUnreadMessages } from '@/hooks/useUnreadMessages'
 
 const Navbar = () => {
     const [activeTab, setActiveTab] = useState('home')
+    const unreadCount = useUnreadMessages()
 
     return (
         <ClerkProvider>
@@ -61,6 +63,13 @@ const Navbar = () => {
                             href="/addphoto" 
                             isActive={activeTab === 'addphoto'}
                             onClick={() => setActiveTab('addphoto')}
+                        />
+                        <NavItem 
+                            icon={MessageCircle} 
+                            href="/messages" 
+                            isActive={activeTab === 'messages'}
+                            onClick={() => setActiveTab('messages')}
+                            badgeCount={unreadCount}
                         />
                         <div className="max-sm:p-1">
                             <NotificationDropdown/>
@@ -123,6 +132,14 @@ const Navbar = () => {
                             onClick={() => setActiveTab('addphoto')}
                             isDesktop
                         />
+                        <NavItem 
+                            icon={MessageCircle} 
+                            href="/messages" 
+                            isActive={activeTab === 'messages'}
+                            onClick={() => setActiveTab('messages')}
+                            isDesktop
+                            badgeCount={unreadCount}
+                        />
                         
                         <NotificationDropdown/>
                         
@@ -163,18 +180,21 @@ const NavItem = ({
     href, 
     isActive, 
     onClick, 
-    isDesktop = false 
+    isDesktop = false,
+    badgeCount = 0
 }: { 
     icon: any; 
     href: string; 
     isActive: boolean; 
     onClick: () => void;
     isDesktop?: boolean;
+    badgeCount?: number;
 }) => (
     <motion.div
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         transition={{ duration: 0.2 }}
+        className="relative"
     >
         <Link
             href={href}
@@ -194,6 +214,13 @@ const NavItem = ({
                 strokeWidth={isActive ? 2 : 1.5}
             />
         </Link>
+        {badgeCount > 0 && (
+            <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center">
+                <span className="text-xs text-white font-medium">
+                    {badgeCount > 9 ? '9+' : badgeCount}
+                </span>
+            </div>
+        )}
     </motion.div>
 )
 

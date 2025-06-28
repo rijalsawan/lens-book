@@ -40,6 +40,11 @@ model User {
   shares    Share[]
   notifications Notification[]
   notificationsReceived Notification[] @relation("NotificationActions")
+  
+  // Messaging relations
+  conversations ConversationParticipant[]
+  sentMessages  Message[] @relation("MessageSender")
+  messageReads  MessageRead[]
 }
 
 model Photo {
@@ -173,4 +178,67 @@ model Notification {
   @@index([userId])
   @@index([createdAt])
   @@index([isRead])
+}
+
+// Messaging Models
+model Conversation {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  participants ConversationParticipant[]
+  messages     Message[]
+  
+  @@index([updatedAt])
+}
+
+model ConversationParticipant {
+  id             String   @id @default(cuid())
+  createdAt      DateTime @default(now())
+  
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([conversationId, userId])
+  @@index([userId])
+}
+
+model Message {
+  id             String   @id @default(cuid())
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  
+  content        String
+  isEdited       Boolean  @default(false)
+  isDeleted      Boolean  @default(false)
+  
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  
+  senderId       String
+  sender         User     @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+  
+  // Read receipts
+  reads          MessageRead[]
+  
+  @@index([conversationId])
+  @@index([createdAt])
+}
+
+model MessageRead {
+  id        String   @id @default(cuid())
+  readAt    DateTime @default(now())
+  
+  messageId String
+  message   Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([messageId, userId])
+  @@index([userId])
 }
