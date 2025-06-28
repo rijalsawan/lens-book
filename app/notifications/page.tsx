@@ -118,9 +118,9 @@ export default function NotificationsPage() {
     }
 
     return (
-        <div className="min-h-screen bg-white">
+        <div className="min-h-screen bg-white pt-16 lg:pt-0">
             {/* Mobile Header */}
-            <div className="sticky top-0 z-50 bg-white border-b border-slate-100">
+            <div className="sticky top-16 lg:top-0 z-[60] bg-white border-b border-slate-100">
                 <div className="flex items-center justify-between px-4 py-3">
                     <div className="flex items-center gap-4">
                         <button 
@@ -181,7 +181,7 @@ export default function NotificationsPage() {
             </div>
 
             {/* Content */}
-            <div className="max-w-lg mx-auto">
+            <div className="max-w-2xl mx-auto">
                 {loading && notifications.length === 0 ? (
                     <div className="flex justify-center items-center py-20">
                         <div className="w-8 h-8 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin" />

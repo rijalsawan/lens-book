@@ -2,11 +2,17 @@
 
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Search, Plus, MessageCircle } from 'lucide-react'
+import { 
+  Search, 
+  Plus, 
+  MessageCircle, 
+  Send,
+  Clock,
+  CheckCheck
+} from 'lucide-react'
 import Link from 'next/link'
 import { useUser } from '@clerk/nextjs'
 import { useRouter } from 'next/navigation'
-import LoadingSpinner from '@/components/LoadingSpinner'
 import { useConversations } from '@/hooks/useConversations'
 
 interface User {
@@ -68,66 +74,80 @@ export default function MessagesPage() {
     follower.name?.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
+  const formatTimeAgo = (dateString: string) => {
+    const date = new Date(dateString)
+    const now = new Date()
+    const seconds = Math.floor((now.getTime() - date.getTime()) / 1000)
+    
+    if (seconds < 60) return `${seconds}s`
+    if (seconds < 3600) return `${Math.floor(seconds / 60)}m`
+    if (seconds < 86400) return `${Math.floor(seconds / 3600)}h`
+    if (seconds < 604800) return `${Math.floor(seconds / 86400)}d`
+    return `${Math.floor(seconds / 604800)}w`
+  }
+
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <LoadingSpinner />
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-20 pb-20">
-      <div className="max-w-4xl mx-auto px-4">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-6"
-        >
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">Messages</h1>
+    <div className="min-h-screen bg-white pt-16 lg:pt-0">
+      {/* Header */}
+      <div className="sticky top-16 lg:top-0 z-[60] bg-white border-b border-gray-200">
+        <div className="px-4 py-4">
+          <div className="flex items-center justify-between mb-4">
+            <h1 className="text-2xl font-bold text-gray-900">Messages</h1>
+            <button className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+              <Send className="w-6 h-6 text-gray-700" />
+            </button>
+          </div>
           
-          {/* Search Bar */}
+          {/* Search */}
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
             <input
               type="text"
-              placeholder="Search conversations..."
+              placeholder="Search messages..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2.5 bg-gray-100 rounded-lg border-0 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
             />
           </div>
-        </motion.div>
+        </div>
 
         {/* Tabs */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="flex bg-white rounded-xl p-1 mb-6 shadow-sm"
-        >
-          <button
-            onClick={() => setActiveTab('conversations')}
-            className={`flex-1 py-3 px-4 rounded-lg text-sm font-medium transition-all ${
-              activeTab === 'conversations'
-                ? 'bg-blue-500 text-white shadow-sm'
-                : 'text-gray-600 hover:text-gray-900'
-            }`}
-          >
-            Conversations
-          </button>
-          <button
-            onClick={() => setActiveTab('followers')}
-            className={`flex-1 py-3 px-4 rounded-lg text-sm font-medium transition-all ${
-              activeTab === 'followers'
-                ? 'bg-blue-500 text-white shadow-sm'
-                : 'text-gray-600 hover:text-gray-900'
-            }`}
-          >
-            Start New Chat
-          </button>
-        </motion.div>
+        <div className="px-4 mb-4">
+          <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg">
+            <button
+              onClick={() => setActiveTab('conversations')}
+              className={`flex-1 py-2 px-3 text-sm font-medium rounded-md transition-all ${
+                activeTab === 'conversations'
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              Chats
+            </button>
+            <button
+              onClick={() => setActiveTab('followers')}
+              className={`flex-1 py-2 px-3 text-sm font-medium rounded-md transition-all ${
+                activeTab === 'followers'
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              New Chat
+            </button>
+          </div>
+        </div>
+      </div>
 
+      {/* Content */}
+      <div className="max-w-2xl mx-auto pb-20">
         <AnimatePresence mode="wait">
           {activeTab === 'conversations' ? (
             <motion.div
@@ -135,22 +155,34 @@ export default function MessagesPage() {
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 20 }}
-              className="space-y-3"
+              transition={{ duration: 0.2 }}
             >
               {filteredConversations.length === 0 ? (
-                <div className="text-center py-12">
-                  <MessageCircle className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold text-gray-600 mb-2">No conversations yet</h3>
-                  <p className="text-gray-500">Start chatting with your followers!</p>
+                <div className="flex flex-col items-center justify-center py-16 px-8">
+                  <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                    <MessageCircle className="w-10 h-10 text-gray-400" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">No messages yet</h3>
+                  <p className="text-gray-500 text-center mb-6">
+                    Start a conversation with your followers
+                  </p>
+                  <button
+                    onClick={() => setActiveTab('followers')}
+                    className="bg-blue-500 text-white px-6 py-2.5 rounded-lg font-medium hover:bg-blue-600 transition-colors"
+                  >
+                    Send message
+                  </button>
                 </div>
               ) : (
-                filteredConversations.map((conversation) => (
-                  <ConversationItem
-                    key={conversation.id}
-                    conversation={conversation}
-                    currentUserId={user?.id || ''}
-                  />
-                ))
+                <div className="divide-y divide-gray-100">
+                  {filteredConversations.map((conversation) => (
+                    <ConversationItem
+                      key={conversation.id}
+                      conversation={conversation}
+                      currentUserId={user?.id || ''}
+                    />
+                  ))}
+                </div>
               )}
             </motion.div>
           ) : (
@@ -159,22 +191,28 @@ export default function MessagesPage() {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
-              className="space-y-3"
+              transition={{ duration: 0.2 }}
             >
               {filteredFollowers.length === 0 ? (
-                <div className="text-center py-12">
-                  <Plus className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold text-gray-600 mb-2">No followers found</h3>
-                  <p className="text-gray-500">Get some followers to start chatting!</p>
+                <div className="flex flex-col items-center justify-center py-16 px-8">
+                  <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                    <Plus className="w-10 h-10 text-gray-400" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">No followers found</h3>
+                  <p className="text-gray-500 text-center">
+                    Get some followers to start chatting!
+                  </p>
                 </div>
               ) : (
-                filteredFollowers.map((follower) => (
-                  <FollowerItem
-                    key={follower.id}
-                    follower={follower}
-                    onStartChat={() => handleStartConversation(follower.id)}
-                  />
-                ))
+                <div className="divide-y divide-gray-100">
+                  {filteredFollowers.map((follower) => (
+                    <FollowerItem
+                      key={follower.id}
+                      follower={follower}
+                      onStartChat={() => handleStartConversation(follower.id)}
+                    />
+                  ))}
+                </div>
               )}
             </motion.div>
           )}
@@ -188,17 +226,15 @@ const ConversationItem = ({ conversation, currentUserId }: { conversation: any; 
   const otherParticipant = conversation.participants.find((p: any) => p.id !== currentUserId)
   
   return (
-    <motion.div
-      whileHover={{ scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
+    <Link
+      href={`/messages/${conversation.id}`}
+      className="block px-4 py-3 hover:bg-gray-50 active:bg-gray-100 transition-colors"
     >
-      <Link
-        href={`/messages/${conversation.id}`}
-        className="block bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-all border border-gray-100"
-      >
-        <div className="flex items-center space-x-3">
-          <div className="relative">
-            <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-200">
+      <div className="flex items-center space-x-3">
+        {/* Avatar */}
+        <div className="relative">
+          <div className="w-14 h-14 rounded-full overflow-hidden bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-600 p-0.5">
+            <div className="w-full h-full rounded-full overflow-hidden bg-white flex items-center justify-center">
               {otherParticipant?.avatar ? (
                 <img
                   src={otherParticipant.avatar}
@@ -206,81 +242,111 @@ const ConversationItem = ({ conversation, currentUserId }: { conversation: any; 
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <div className="w-full h-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-semibold">
-                  {otherParticipant?.username.charAt(0).toUpperCase()}
-                </div>
+                <span className="font-semibold text-slate-700 text-lg">
+                  {otherParticipant?.username?.charAt(0)?.toUpperCase() || '?'}
+                </span>
               )}
             </div>
-            {conversation.unreadCount > 0 && (
-              <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center">
-                <span className="text-xs text-white font-medium">
-                  {conversation.unreadCount > 9 ? '9+' : conversation.unreadCount}
-                </span>
-              </div>
-            )}
+          </div>
+          {conversation.unreadCount > 0 && (
+            <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center">
+              <span className="text-xs text-white font-medium">
+                {conversation.unreadCount > 9 ? '9+' : conversation.unreadCount}
+              </span>
+            </div>
+          )}
+        </div>
+        
+        {/* Content */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center justify-between mb-1">
+            <h3 className="font-semibold text-gray-900 truncate">
+              {otherParticipant?.name || otherParticipant?.username}
+            </h3>
+            <div className="flex items-center space-x-1">
+              {conversation.lastMessage && (
+                <>
+                  {conversation.lastMessage.sender.id === currentUserId && (
+                    <CheckCheck className="w-4 h-4 text-blue-500" />
+                  )}
+                  <span className="text-xs text-gray-500">
+                    {formatTimeAgo(conversation.lastMessage.createdAt)}
+                  </span>
+                </>
+              )}
+            </div>
           </div>
           
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center justify-between">
-              <h3 className="font-semibold text-gray-900 truncate">
-                {otherParticipant?.name || otherParticipant?.username}
-              </h3>
-              {conversation.lastMessage && (
-                <span className="text-xs text-gray-500">
-                  {new Date(conversation.lastMessage.createdAt).toLocaleDateString()}
-                </span>
-              )}
-            </div>
-            
-            {conversation.lastMessage ? (
-              <p className={`text-sm truncate ${
+          {conversation.lastMessage ? (
+            <div className="flex items-center space-x-2">
+              <p className={`text-sm truncate flex-1 ${
                 conversation.unreadCount > 0 ? 'text-gray-900 font-medium' : 'text-gray-500'
               }`}>
                 {conversation.lastMessage.sender.id === currentUserId ? 'You: ' : ''}
                 {conversation.lastMessage.content}
               </p>
-            ) : (
-              <p className="text-sm text-gray-500">Start your conversation</p>
-            )}
-          </div>
+              {conversation.unreadCount > 0 && (
+                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+              )}
+            </div>
+          ) : (
+            <p className="text-sm text-gray-500">Start your conversation</p>
+          )}
         </div>
-      </Link>
-    </motion.div>
+      </div>
+    </Link>
   )
 }
 
 const FollowerItem = ({ follower, onStartChat }: { follower: User; onStartChat: () => void }) => {
   return (
-    <motion.div
-      whileHover={{ scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
+    <button
       onClick={onStartChat}
-      className="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-all border border-gray-100 cursor-pointer"
+      className="w-full px-4 py-3 hover:bg-gray-50 active:bg-gray-100 transition-colors"
     >
       <div className="flex items-center space-x-3">
-        <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-200">
-          {follower.avatar ? (
-            <img
-              src={follower.avatar}
-              alt={follower.username}
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <div className="w-full h-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-semibold">
-              {follower.username.charAt(0).toUpperCase()}
-            </div>
-          )}
+        {/* Avatar */}
+        <div className="w-14 h-14 rounded-full overflow-hidden bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-600 p-0.5">
+          <div className="w-full h-full rounded-full overflow-hidden bg-white flex items-center justify-center">
+            {follower.avatar ? (
+              <img
+                src={follower.avatar}
+                alt={follower.username}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <span className="font-semibold text-slate-700 text-lg">
+                {follower.username?.charAt(0)?.toUpperCase() || '?'}
+              </span>
+            )}
+          </div>
         </div>
-        <div className="flex-1 min-w-0">
-          <h3 className="font-semibold text-gray-900 truncate">
+        
+        {/* Content */}
+        <div className="flex-1 text-left">
+          <h3 className="font-semibold text-gray-900">
             {follower.name || follower.username}
           </h3>
           <p className="text-sm text-gray-500">@{follower.username}</p>
         </div>
-        <div className="text-blue-500">
+        
+        {/* Message Icon */}
+        <div className="text-gray-400">
           <MessageCircle className="w-5 h-5" />
         </div>
       </div>
-    </motion.div>
+    </button>
   )
+}
+
+function formatTimeAgo(dateString: string) {
+  const date = new Date(dateString)
+  const now = new Date()
+  const seconds = Math.floor((now.getTime() - date.getTime()) / 1000)
+  
+  if (seconds < 60) return `${seconds}s`
+  if (seconds < 3600) return `${Math.floor(seconds / 60)}m`
+  if (seconds < 86400) return `${Math.floor(seconds / 3600)}h`
+  if (seconds < 604800) return `${Math.floor(seconds / 86400)}d`
+  return `${Math.floor(seconds / 604800)}w`
 }

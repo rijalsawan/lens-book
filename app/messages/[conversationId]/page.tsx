@@ -196,52 +196,53 @@ export default function ConversationPage() {
   }
 
   return (
-    <div className="h-screen flex flex-col bg-gray-50">
+    <div className="h-screen flex flex-col bg-white max-w-2xl mx-auto pt-16 lg:pt-0">
       {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-white border-b border-gray-100 px-4 py-3 flex items-center space-x-4 fixed top-0 left-0 right-0 z-50"
-      >
-        <motion.button
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-          onClick={() => router.push('/messages')}
-          className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-        >
-          <ArrowLeft className="w-5 h-5 text-gray-600" />
-        </motion.button>
-        
-        <div className="flex items-center space-x-3 flex-1">
-          <div className="relative">
-            <div className="w-11 h-11 rounded-full overflow-hidden bg-gray-200 ring-2 ring-gray-100">
-              {otherParticipant?.avatar ? (
-                <img
-                  src={otherParticipant.avatar}
-                  alt={otherParticipant.username}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-full bg-gradient-to-br from-blue-400 via-purple-500 to-pink-500 flex items-center justify-center text-white font-semibold text-lg">
-                  {otherParticipant?.username.charAt(0).toUpperCase()}
+      <div className="sticky top-16 lg:top-0 z-[60] bg-white border-b border-gray-200">
+        <div className="px-4 py-3 flex items-center space-x-3">
+          <button
+            onClick={() => router.push('/messages')}
+            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+          >
+            <ArrowLeft className="w-6 h-6 text-gray-700" />
+          </button>
+          
+          <div className="flex items-center space-x-3 flex-1">
+            <div className="relative">
+              <div className="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-600 p-0.5">
+                <div className="w-full h-full rounded-full overflow-hidden bg-white flex items-center justify-center">
+                  {otherParticipant?.avatar ? (
+                    <img
+                      src={otherParticipant.avatar}
+                      alt={otherParticipant.username}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <span className="font-semibold text-slate-700 text-sm">
+                      {otherParticipant?.username?.charAt(0)?.toUpperCase() || '?'}
+                    </span>
+                  )}
                 </div>
-              )}
+              </div>
+              <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-400 rounded-full border-2 border-white"></div>
             </div>
-            {/* Online status indicator */}
-            <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-400 rounded-full border-2 border-white"></div>
+            
+            <div className="flex-1">
+              <h2 className="font-semibold text-gray-900">
+                {otherParticipant?.name || otherParticipant?.username}
+              </h2>
+              <p className="text-xs text-gray-500">Active now</p>
+            </div>
           </div>
           
-          <div className="flex-1">
-            <h2 className="font-semibold text-gray-900 text-lg">
-              {otherParticipant?.name || otherParticipant?.username}
-            </h2>
-            <p className="text-sm text-gray-500">Active now</p>
-          </div>
+          <button className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+            <MoreVertical className="w-5 h-5 text-gray-700" />
+          </button>
         </div>
-      </motion.div>
+      </div>
 
       {/* Messages */}
-      <div className="flex-1 items-end max-sm:mb-25 overflow-y-auto px-4 py-6 space-y-4 pb-24 sm:pb-6 pt-20">
+      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3 pb-20">
         <AnimatePresence>
           {messages.map((message) => (
             <MessageBubble
@@ -281,12 +282,8 @@ export default function ConversationPage() {
       </div>
 
       {/* Message Input */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-white border-t border-gray-100 px-4 py-4 fixed bottom-16 left-0 right-0 z-50 sm:sticky sm:bottom-0 sm:z-auto"
-      >
-        <div className="flex items-end space-x-3 max-w-4xl mx-auto">
+      <div className="sticky max-sm:bottom-15 lg:bottom-24 bg-white border-t border-gray-200 px-4 py-3 z-40">
+        <div className="flex items-center space-x-3">
           <div className="flex-1 relative">
             <input
               type="text"
@@ -294,21 +291,19 @@ export default function ConversationPage() {
               onChange={(e) => setNewMessage(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
               placeholder="Message..."
-              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:bg-white transition-all"
+              className="w-full px-4 py-2.5 bg-gray-100 border-0 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
               disabled={sending}
             />
           </div>
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+          <button
             onClick={handleSendMessage}
             disabled={!newMessage.trim() || sending}
-            className="p-3 bg-blue-500 text-white rounded-full hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg"
+            className="p-2.5 bg-blue-500 text-white rounded-full hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
           >
             <Send className="w-5 h-5" />
-          </motion.button>
+          </button>
         </div>
-      </motion.div>
+      </div>
 
       {/* Delete Confirmation Modal */}
       <AnimatePresence>
